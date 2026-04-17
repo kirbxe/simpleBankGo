@@ -8,7 +8,7 @@ import (
 
 type Bank struct {
 	Accounts []*Account
-	mtx      sync.Mutex
+	mtx      sync.RWMutex
 	sem chan struct{}
 }
 
@@ -64,8 +64,8 @@ func (b *Bank) Transfer(fromID int, toID int, amount int) error {
 	b.sem <- struct{}{}
 	defer func() { <-b.sem }()
 	
-	b.mtx.Lock()
-	defer b.mtx.Unlock()
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
 	var fromAcc, toAcc *Account
 
 	for _, acc := range b.Accounts {
@@ -118,9 +118,13 @@ func (b *Bank) Transfer(fromID int, toID int, amount int) error {
 	// return errors.New("Клиента под таким айди не существует")
 }
 
+
+
+
+// READ FUNCTIONS
 func (b *Bank) GetBalance(id int) error {
-	b.mtx.Lock()
-	defer b.mtx.Unlock()
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
 	for _, acc := range b.Accounts {
 
 		if acc.ID == id {

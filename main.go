@@ -4,6 +4,7 @@ import (
 	"bank/bank"
 	"fmt"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -19,6 +20,8 @@ func main() {
 	)
 	module := bank.NewBankModule(b1)
 
+	startTime := time.Now()
+	
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
 		go func() {
@@ -32,11 +35,18 @@ func main() {
 		}()
 
 	}
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			module.BankMethod.GetBalance(1)
+			module.BankMethod.GetBalance(2)
+			total := module.BankMethod.Total()
+			fmt.Println("Всего денег в банке: ", total)
+		}()
+	}
 	wg.Wait()
-	module.BankMethod.GetBalance(1)
-	module.BankMethod.GetBalance(2)
 	
-	totalSum := module.BankMethod.Total()
-	fmt.Println("Всего денег в банке: ", totalSum)
+	fmt.Println("Прошедшее время: ", time.Since(startTime))
 
 }
