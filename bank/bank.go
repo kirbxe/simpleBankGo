@@ -64,8 +64,8 @@ func (b *Bank) Transfer(fromID int, toID int, amount int) error {
 	b.sem <- struct{}{}
 	defer func() { <-b.sem }()
 	
-	b.mtx.RLock()
-	defer b.mtx.RUnlock()
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
 	var fromAcc, toAcc *Account
 
 	for _, acc := range b.Accounts {
@@ -138,8 +138,8 @@ func (b *Bank) GetBalance(id int) error {
 }
 
 func (b *Bank) Total() (int) {
-	b.mtx.Lock()
-	defer b.mtx.Unlock()
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
 	sum := 0
 	for _,v := range b.Accounts {
 		sum += v.Balance
